@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoFood Style - Pemesanan Makanan</title>
+  <!-- Library QR Code Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f5f7; color: #333; padding-bottom: 80px; }
+    
+    /* Header */
+    header { background-color: #00880C; color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
+
+    /* Layout Utama */
+    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+
+    /* Menu makanan */
+    .menu-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; justify-content: space-between; }
+    .card img { width: 100%; height: 130px; object-fit: cover; }
+    .card-body { padding: 12px; }
+    .card-title { font-size: 1rem; font-weight: bold; margin-bottom: 4px; }
+    .card-price { color: #00880C; font-weight: bold; margin-bottom: 10px; }
+    .btn-add { width: 100%; background-color: #00880C; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-add:hover { background-color: #006609; }
+
+    /* Form Order & Keranjang */
+    .cart-section { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; }
+    .cart-section h2 { font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid #f4f5f7; padding-bottom: 8px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+    .cart-items { margin: 15px 0; border-top: 1px solid #eee; padding-top: 10px; }
+    .cart-item { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px; }
+    .total-price { font-size: 1.1rem; font-weight: bold; display: flex; justify-content: space-between; border-top: 2px solid #eee; padding-top: 10px; margin-top: 10px; }
+
+    /* Modal Styles */
+    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .receipt { background: #fff; width: 320px; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
+    .receipt.mono { font-family: 'Courier New', Courier, monospace; }
+    .receipt h3 { font-size: 1.3rem; margin-bottom: 5px; }
+    .receipt-line { border-bottom: 1px dashed #000; margin: 10px 0; }
+    .receipt-details { text-align: left; font-size: 0.85rem; }
+    .receipt-details div { display: flex; justify-content: space-between; margin-bottom: 3px; }
+    #qrcode { display: flex; justify-content: center; margin: 15px 0; }
+    .btn-close { color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: bold; transition: 0.2s; }
+    .btn-red { background: #dc3545; }
+    .btn-red:hover { background: #c82333; }
+    .btn-gray { background: #6c757d; }
+    .btn-gray:hover { background: #5a6268; }
+    .btn-green { background: #25d366; }
+    .btn-green:hover { background: #1eb954; }
+
+    /* Tombol Floating WA */
+    .wa-float { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; padding: 12px 20px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; z-index: 99; cursor: pointer; border: none; transition: 0.2s; }
+    .wa-float:hover { background-color: #1eb954; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🟢 GoFood Express</h1>
+  </header>
+
+  <div class="container">
+    <!-- Daftar Makanan -->
+    <div class="menu-section">
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300" alt="Nasi Goreng" onerror="this.src='https://via.placeholder.com/300x200?text=Nasi+Goreng'">
+        <div class="card-body">
+          <div class="card-title">Nasi Goreng Spesial</div>
+          <div class="card-price">Rp 25.000</div>
+          <button class="btn-add" onclick="addToCart('Nasi Goreng Spesial', 25000)">+ Tambah</button>
+        </div>
+      </div>
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300" alt="Burger" onerror="this.src='https://via.placeholder.com/300x200?text=Burger'">
+        <div class="card-body">
+          <div class="card-title">Burger Beef Cheese</div>
+          <div class="card-price">Rp 30.000</div>
+          <button class="btn-add" onclick="addToCart('Burger Beef Cheese', 30000)">+ Tambah</button>
+        </div>
+      </div>
+      <div class="card">
+        <img src=https://food.detik.com/ayam/d-7183061/resep-ayam-bakar-jawa-yang-manis-gurih-meresap-bumbunya alt="Ayam Goreng" onerror="this.src='https://via.placeholder.com/300x200?text=Ayam+Bakar'">
+        <div class="card-body">
+          <div class="card-title">Ayam Bakar Combo</div>
+          <div class="card-price">Rp 28.000</div>
+          <button class="btn-add" onclick="addToCart('Ayam Bakar Combo', 28000)">+ Tambah</button>
+        </div>
+      </div>
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=300" alt="Es Teh" onerror="this.src='https://via.placeholder.com/300x200?text=Es+Teh'">
+        <div class="card-body">
+          <div class="card-title">Es Teh Manis</div>
+          <div class="card-price">Rp 5.000</div>
+          <button class="btn-add" onclick="addToCart('Es Teh Manis', 5000)">+ Tambah</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Keranjang dan Form Pemesanan -->
+    <div class="cart-section">
+      <h2>Ringkasan Pesanan</h2>
+      
+      <div class="form-group">
+        <label>Tipe Pesanan</label>
+        <select id="orderType" onchange="toggleTableInput()">
+          <option value="Dine In">Makan di Tempat (Dine In)</option>
+          <option value="Takeaway">Bawa Pulang (Takeaway)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="tableGroup">
+        <label>Nomor Meja</label>
+        <input type="number" id="tableNumber" placeholder="Contoh: 05" value="1">
+      </div>
+
+      <div class="form-group">
+        <label>Metode Pembayaran</label>
+        <select id="paymentMethod">
+          <option value="Tunai / Cash">Tunai (Cash)</option>
+          <option value="Transfer Bank">Transfer Bank</option>
+          <option value="E-Wallet (Gopay/OVO/Dana)">E-Wallet</option>
+        </select>
+      </div>
+
+      <div class="cart-items" id="cartItems">
+        <p style="color: #888; text-align: center;">Keranjang masih kosong</p>
+      </div>
+
+      <div class="total-price">
+        <span>Total:</span>
+        <span id="totalDisplay">Rp 0</span>
+      </div>
+
+      <button class="btn-add" style="margin-top: 15px; padding: 12px; font-size: 1rem;" onclick="processOrder()">Pesan Sekarang</button>
+    </div>
+  </div>
+
+  <!-- Struk Modal (Digital Receipt) -->
+  <div class="modal" id="receiptModal">
+    <div class="receipt mono">
+      <h3>GOFOOD EXPRESS</h3>
+      <p style="font-size: 0.75rem;">Jl. Kuliner No. 88, Indonesia</p>
+      <div class="receipt-line"></div>
+      
+      <div class="receipt-details" id="receiptContent"></div>
+      
+      <div class="receipt-line"></div>
+      <p style="font-size: 0.75rem; margin-bottom: 5px;">Scan QR untuk Konfirmasi Pesanan</p>
+      <div id="qrcode"></div>
+      <div class="receipt-line"></div>
+      
+      <button class="btn-close btn-red" style="width: 100%;" onclick="closeModal()">Kirim Pesanan ke WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- Modal Peringatan Kustom (Pengganti Alert) -->
+  <div class="modal" id="customAlert" style="z-index: 2000;">
+    <div class="receipt">
+      <h3 style="color: #dc3545;">Perhatian</h3>
+      <p id="alertMessage" style="margin: 15px 0; font-size: 1rem; color: #555;"></p>
+      <button class="btn-close btn-gray" style="width: 100%;" onclick="document.getElementById('customAlert').style.display='none'">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Modal Input Pesan WA (Pengganti Prompt) -->
+  <div class="modal" id="waPromptModal" style="z-index: 2000;">
+    <div class="receipt">
+      <h3 style="color: #00880C;">Chat Admin</h3>
+      <p style="margin: 10px 0; font-size: 0.9rem; color: #555;">Ketikkan pesan yang ingin disampaikan kepada admin:</p>
+      <textarea id="waMessageInput" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; resize: none; margin-bottom: 10px;"></textarea>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-close btn-gray" style="flex: 1;" onclick="document.getElementById('waPromptModal').style.display='none'">Batal</button>
+        <button class="btn-close btn-green" style="flex: 1;" onclick="sendCustomWAMessage()">Kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WhatsApp Floating Button -->
+  <button class="wa-float" onclick="openWAPrompt()">
+    💬 Chat Admin
+  </button>
+
+  <script>
+    const adminWA = "6281234567890"; // Nomor WhatsApp Admin Default
+    let cart = [];
+    let currentOrder = null;
+
+    // Fungsi untuk menampilkan pesan peringatan kustom
+    function showAlert(message) {
+      document.getElementById('alertMessage').innerText = message;
+      document.getElementById('customAlert').style.display = 'flex';
+    }
+
+    // Toggle input nomor meja berdasarkan tipe pesanan
+    function toggleTableInput() {
+      const orderType = document.getElementById('orderType').value;
+      const tableGroup = document.getElementById('tableGroup');
+      tableGroup.style.display = orderType === 'Dine In' ? 'block' : 'none';
+    }
+
+    // Tambah makanan ke keranjang
+    function addToCart(name, price) {
+      const existing = cart.find(item => item.name === name);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ name, price, qty: 1 });
+      }
+      renderCart();
+    }
+
+    // Render / Tampilkan isi keranjang
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      const totalDisplay = document.getElementById('totalDisplay');
+      
+      if (cart.length === 0) {
+        container.innerHTML = '<p style="color: #888; text-align: center;">Keranjang masih kosong</p>';
+        totalDisplay.innerText = 'Rp 0';
+        return;
+      }
+
+      container.innerHTML = '';
+      let total = 0;
+
+      cart.forEach(item => {
+        const itemTotal = item.price * item.qty;
+        total += itemTotal;
+        container.innerHTML += `
+          <div class="cart-item">
+            <span>${item.name} <strong>x${item.qty}</strong></span>
+            <span>Rp ${itemTotal.toLocaleString('id-ID')}</span>
+          </div>
+        `;
+      });
+
+      totalDisplay.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+    }
+
+    // Proses pesanan dan validasi
+    function processOrder() {
+      if (cart.length === 0) {
+        showAlert("Pilih minimal 1 menu makanan terlebih dahulu sebelum memesan!");
+        return;
+      }
+
+      const orderType = document.getElementById('orderType').value;
+      const tableNumber = document.getElementById('tableNumber').value;
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+
+      if (orderType === 'Dine In' && (!tableNumber || tableNumber.trim() === "")) {
+        showAlert("Silakan masukkan nomor meja Anda!");
+        return;
+      }
+
+      currentOrder = {
+        orderId,
+        orderType,
+        tableNumber: orderType === 'Dine In' ? tableNumber : '-',
+        paymentMethod,
+        items: [...cart],
+        total
+      };
+
+      showReceipt(currentOrder);
+    }
+
+    // Tampilkan struk digital dan generate QR
+    function showReceipt(order) {
+      const receiptContent = document.getElementById('receiptContent');
+      let itemsHTML = '';
+      
+      order.items.forEach(item => {
+        itemsHTML += `
+          <div>
+            <span>${item.qty}x ${item.name}</span>
+            <span>${(item.price * item.qty).toLocaleString('id-ID')}</span>
+          </div>
+        `;
+      });
+
+      receiptContent.innerHTML = `
+        <div><span>No. Order:</span><span>${order.orderId}</span></div>
+        <div><span>Tipe:</span><span>${order.orderType}</span></div>
+        ${order.orderType === 'Dine In' ? `<div><span>No. Meja:</span><span>${order.tableNumber}</span></div>` : ''}
+        <div><span>Bayar:</span><span>${order.paymentMethod}</span></div>
+        <div class="receipt-line"></div>
+        ${itemsHTML}
+        <div class="receipt-line"></div>
+        <div><strong>TOTAL:</strong><strong>Rp ${order.total.toLocaleString('id-ID')}</strong></div>
+      `;
+
+      // Hapus QR sebelumnya dan generate yang baru
+      document.getElementById('qrcode').innerHTML = '';
+      new QRCode(document.getElementById('qrcode'), {
+        text: `ORDER:${order.orderId}|TOTAL:${order.total}|MEJA:${order.tableNumber}`,
+        width: 120,
+        height: 120,
+        colorDark : "#000000",
+        colorLight : "#ffffff"
+      });
+
+      document.getElementById('receiptModal').style.display = 'flex';
+    }
+
+    // Tutup struk, kirim wa, dan reset keranjang
+    function closeModal() {
+      document.getElementById('receiptModal').style.display = 'none';
+      sendOrderToWA(currentOrder);
+      cart = [];
+      renderCart();
+    }
+
+    // Format dan kirim data order ke WA
+    function sendOrderToWA(order) {
+      let text = `*HALO ADMIN, SAYA INGIN MEMESAN MAKANAN*\n\n`;
+      text += `*ID Pesanan:* ${order.orderId}\n`;
+      text += `*Tipe Pemesanan:* ${order.orderType}\n`;
+      if (order.orderType === 'Dine In') {
+        text += `*Nomor Meja:* ${order.tableNumber}\n`;
+      }
+      text += `*Metode Pembayaran:* ${order.paymentMethod}\n\n`;
+      text += `*Detail Pesanan:*\n`;
+
+      order.items.forEach(item => {
+        text += `- ${item.name} (${item.qty}x) = Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n`;
+      });
+
+      text += `\n*Total Bayar:* Rp ${order.total.toLocaleString('id-ID')}\n\n`;
+      text += `Mohon segera diproses, terima kasih!`;
+
+      const encodedText = encodeURIComponent(text);
+      window.open(`https://wa.me/${adminWA}?text=${encodedText}`, '_blank');
+    }
+
+    // Tampilkan modal input WA (tombol melayang)
+    function openWAPrompt() {
+      document.getElementById('waMessageInput').value = '';
+      document.getElementById('waPromptModal').style.display = 'flex';
+      document.getElementById('waMessageInput').focus();
+    }
+
+    // Kirim pesan kustom WA
+    function sendCustomWAMessage() {
+      const userMessage = document.getElementById('waMessageInput').value;
+      if (userMessage.trim() !== "") {
+        const encodedText = encodeURIComponent(userMessage);
+        window.open(`https://wa.me/${adminWA}?text=${encodedText}`, '_blank');
+        document.getElementById('waPromptModal').style.display = 'none';
+      } else {
+        showAlert("Pesan tidak boleh kosong!");
+      }
+    }
+  </script>
+</body>
+</html>
