@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -8,14 +9,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f4f5f7; color: #333; padding-bottom: 80px; }
+    body { background-color: #f4f5f7; color: #333; padding-bottom: 80px; display: flex; flex-direction: column; min-height: 100vh; }
     
     /* Header */
     header { background-color: #00880C; color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
 
     /* Layout Utama */
-    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; flex: 1; width: 100%; }
     @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
 
     /* Menu makanan */
@@ -58,6 +59,11 @@
     /* Tombol Floating WA */
     .wa-float { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; padding: 12px 20px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; z-index: 99; cursor: pointer; border: none; transition: 0.2s; }
     .wa-float:hover { background-color: #1eb954; transform: translateY(-2px); }
+
+    /* Footer */
+    .site-footer { background-color: white; text-align: center; padding: 20px 15px; margin-top: auto; border-top: 1px solid #e0e0e0; font-size: 0.9rem; color: #555; }
+    .site-footer a { color: #00880C; text-decoration: none; font-weight: bold; transition: color 0.2s; }
+    .site-footer a:hover { color: #006609; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -86,7 +92,7 @@
         </div>
       </div>
       <div class="card">
-        <img src=https://food.detik.com/ayam/d-7183061/resep-ayam-bakar-jawa-yang-manis-gurih-meresap-bumbunya alt="Ayam Goreng" onerror="this.src='https://via.placeholder.com/300x200?text=Ayam+Bakar'">
+        <img src= alt="Ayam Goreng" onerror="this.src='https://via.placeholder.com/300x200?text=Ayam+Bakar'">
         <div class="card-body">
           <div class="card-title">Ayam Bakar Combo</div>
           <div class="card-price">Rp 28.000</div>
@@ -142,6 +148,11 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> GoFood Express. Designed by <a href="https://instagram.com/ibee" target="_blank" rel="noopener noreferrer">IBEE</a>.</p>
+  </footer>
+
   <!-- Struk Modal (Digital Receipt) -->
   <div class="modal" id="receiptModal">
     <div class="receipt mono">
@@ -188,7 +199,10 @@
   </button>
 
   <script>
-    const adminWA = "6281234567890"; // Nomor WhatsApp Admin Default
+    // Set Tahun Berjalan pada Footer secara otomatis
+    document.getElementById('currentYear').innerText = new Date().getFullYear();
+
+    const adminWA = "082343027002"; // Nomor WhatsApp Admin Default
     let cart = [];
     let currentOrder = null;
 
